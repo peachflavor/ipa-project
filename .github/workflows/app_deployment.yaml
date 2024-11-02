@@ -34,9 +34,27 @@ jobs:
       with:
         version: v1.20.0
 
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+        export KUBECONFIG=$(pwd)/kubeconfig
+
     - name: Set up Helm
       uses: azure/setup-helm@v1
 
     - name: Deploy to Kubernetes
       run: |
         helm upgrade --install my-ipa-app ./my-ipa-app-chart    # Specify the path to the Helm Chart
+
+    - name: Get Ngrok URL
+      id: ngrok_url
+      run: |
+        ngrok http 80 &   # Start ngrok in the background
+        sleep 5            # Wait for ngrok to initialize
+        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)
+        echo "Ngrok URL: $NGROK_URL"
+        echo "::set-output name=url::$NGROK_URL"  # Set the output variable
+
+    - name: Use Ngrok URL
+      run: |
+        echo "The Ngrok URL is: ${{ steps.ngrok_url.outputs.url }}"
