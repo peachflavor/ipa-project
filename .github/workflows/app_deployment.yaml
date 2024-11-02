@@ -56,4 +56,4 @@ jobs:
           --timeout 5m
           
     - name: Connection Test to Deployed nginx
-      run: curl http://localhost:8080
+      run: curl http://localhost:80
