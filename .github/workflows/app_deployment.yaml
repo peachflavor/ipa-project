@@ -1,14 +1,11 @@
 name: Deploy to Kubernetes
-
 on:
   push:
     branches:
       - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -25,36 +22,28 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
-        context: ./my-ipa-app    # Specify the path to the Dockerfile
+        context: ./my-ipa-app
         push: true
         tags: peachflavor/my-ipa-app:latest
 
-    - name: Set up Kubernetes
-      uses: azure/setup-kubectl@v1
+    # Create a kind cluster
+    - name: Create k8s Kind Cluster
+      uses: helm/kind-action@v1.5.0
       with:
-        version: v1.20.0
-
-    - name: Configure kubectl
-      run: |
-        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
-        export KUBECONFIG=$(pwd)/kubeconfig
+        cluster_name: kind
+        wait: 120s
 
     - name: Set up Helm
       uses: azure/setup-helm@v1
 
+    # Optional: verify cluster connection
+    - name: Verify Kubernetes connection
+      run: kubectl cluster-info
+
     - name: Deploy to Kubernetes
       run: |
-        helm upgrade --install my-ipa-app ./my-ipa-app-chart    # Specify the path to the Helm Chart
-
-    - name: Get Ngrok URL
-      id: ngrok_url
-      run: |
-        ngrok http 80 &   # Start ngrok in the background
-        sleep 5            # Wait for ngrok to initialize
-        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)
-        echo "Ngrok URL: $NGROK_URL"
-        echo "::set-output name=url::$NGROK_URL"  # Set the output variable
-
-    - name: Use Ngrok URL
-      run: |
-        echo "The Ngrok URL is: ${{ steps.ngrok_url.outputs.url }}"
+        helm upgrade --install my-ipa-app ./my-ipa-app-chart \
+          --namespace default \
+          --create-namespace \
+          --wait \
+          --timeout 5m
