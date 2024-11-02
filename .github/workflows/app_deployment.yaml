@@ -54,3 +54,6 @@ jobs:
           --namespace default \
           --wait \
           --timeout 5m
+          
+     - name: Connection Test to Deployed nginx
+       run: curl http://localhost:8080
