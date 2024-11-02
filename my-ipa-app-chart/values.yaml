@@ -1,9 +1,5 @@
+# my-ipa-app-chart/values.yaml
 replicaCount: 1
-
-serviceAccount:
-  create: true
-  name: ""
-  annotations: {}
 
 image:
   repository: peachflavor/my-ipa-app
@@ -17,9 +13,19 @@ service:
 
 ingress:
   enabled: true
-  annotations: 
+  annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     kubernetes.io/ingress.class: nginx
   host: "localhost"
   path: "/"
   pathType: "Prefix"
+
+# Add readiness/liveness probes
+probes:
+  enabled: true
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  liveness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
