@@ -1,22 +1,18 @@
-# my-ipa-app-chart/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
+  name: my-app-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    {{- with .Values.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
 spec:
   rules:
-  - host: {{ .Values.ingress.host | default "localhost" }}
+  - host: localhost
     http:
       paths:
-      - path: {{ .Values.ingress.path | default "/" }}
-        pathType: {{ .Values.ingress.pathType | default "Prefix" }}
+      - path: /
+        pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}
+            name: my-app
             port:
-              number: {{ .Values.service.port | default 80 }}
+              number: 80
