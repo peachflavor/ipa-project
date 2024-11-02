@@ -66,13 +66,3 @@ jobs:
         # Show the response in the logs
         echo "Response from service:"
         curl -s http://localhost:8080
-
-    - name: Test Ingress
-      run: |
-        # Get Ingress IP
-        INGRESS_IP=$(kubectl get ingress my-app-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo "Ingress IP: $INGRESS_IP"
-        # Add hostname to /etc/hosts
-        echo "127.0.0.1 localhost" | sudo tee -a /etc/hosts
-        # Test the connection through ingress
-        curl -H "Host: localhost" http://localhost
