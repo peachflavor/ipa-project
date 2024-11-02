@@ -54,6 +54,15 @@ jobs:
           --namespace default \
           --wait \
           --timeout 5m
-          
-    - name: Connection Test to Deployed nginx
-      run: curl http://localhost:80
+
+    - name: Test Service (Port Forward)
+      run: |
+        # Start port forwarding in the background
+        kubectl port-forward svc/my-ipa-app 8080:80 &
+        # Wait for port forwarding to be ready
+        sleep 5
+        # Test the connection
+        curl http://localhost:8080
+        # Show the response in the logs
+        echo "Response from service:"
+        curl -s http://localhost:8080
